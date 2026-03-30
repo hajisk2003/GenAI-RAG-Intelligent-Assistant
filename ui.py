@@ -5,7 +5,7 @@ import os
 # from app.retrieval.search import search
 from app.llm.generator import generate_answer
 from app.ingestion.loader import load_documents
-from app.ingestion.chunker import split_documents
+from app.ingestion.chunker import chunk_documents
 from app.ingestion.embedder import create_embeddings
 from app.retrieval.vector_store import save_vector_store
 
@@ -32,7 +32,7 @@ if uploaded_file:
 
     # re-run ingestion pipeline
     docs = load_documents()
-    chunks = split_documents(docs)
+    chunks = chunk_documents
     vectors = create_embeddings(chunks)
     save_vector_store(chunks, vectors)
 
