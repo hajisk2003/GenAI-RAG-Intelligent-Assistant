@@ -63,13 +63,13 @@ if question:
     with st.spinner("Thinking..."):
         chunks = search(question)
 
-        # ✅ Handle empty case (important for cloud)
+        # ✅ If NO document data → use general AI
         if not chunks:
-            answer = "⚠️ Please upload a document first."
+            answer = generate_answer(question, [])
             sources = []
         else:
             answer = generate_answer(question, chunks)
-            sources = [c.get("source", "chunk") for c in chunks]
+            sources = [f"Document section {i+1}" for i in range(len(chunks))]
 
     # Format answer
     answer_text = answer

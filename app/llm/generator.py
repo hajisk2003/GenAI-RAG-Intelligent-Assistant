@@ -10,12 +10,14 @@ def generate_answer(question, chunks):
     context = "\n\n".join([c["text"] for c in chunks])
 
     prompt = f"""
-You are a data assistant.
+You are a helpful AI assistant.
 
-Answer ONLY using the provided context.
-Keep answer short and factual (max 2-3 sentences).
-If context is insufficient, say:
-"I don't have enough information in the uploaded documents."
+If context is provided:
+- Answer ONLY using the context
+- Keep answer short (2-3 lines)
+
+If NO context is provided:
+- Answer like a normal AI assistant
 
 Context:
 {context}
