@@ -7,8 +7,7 @@ from app.llm.generator import generate_answer
 from app.ingestion.loader import load_documents
 from app.ingestion.chunker import chunk_documents
 from app.ingestion.embedder import create_embeddings
-from app.retrieval.vector_store import save_vector_store
-
+from app.retrieval.vector_store import save_faiss_index
 st.set_page_config(page_title="GenAI RAG Assistant", layout="wide")
 
 st.title("🤖 GenAI RAG Assistant")
@@ -34,8 +33,7 @@ if uploaded_file:
     docs = load_documents()
     chunks = chunk_documents
     vectors = create_embeddings(chunks)
-    save_vector_store(chunks, vectors)
-
+    save_faiss_index(vectors, chunks)
     st.sidebar.success("File uploaded & indexed!")
 
 # clear chat
