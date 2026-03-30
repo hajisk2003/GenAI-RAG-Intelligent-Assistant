@@ -1,32 +1,37 @@
-import os
 import faiss
+import numpy as np
 import pickle
+import os
 
 VECTOR_PATH = "embeddings/vector_store"
 
-def search(query, top_k=3):
-    index, texts = load_faiss_index()
+def save_faiss_index(vectors, texts):
+    dim = len(vectors[0])
+    index = faiss.IndexFlatL2(dim)
 
-    # ✅ handle empty index (cloud case)
-    if index is None or len(texts) == 0:
-        return []
+    index.add(np.array(vectors).astype("float32"))
 
-    query_vector = model.encode([query])
+    os.makedirs(VECTOR_PATH, exist_ok=True)
 
-    distances, indices = index.search(
-        np.array(query_vector).astype("float32"),
-        top_k
-    )
+    faiss.write_index(index, f"{VECTOR_PATH}/index.faiss")
 
-    results = []
-    for i in indices[0]:
-        if i < len(texts):
-            results.append({
-                "text": texts[i],
-                "source": f"Chunk {i}"
-            })
+    with open(f"{VECTOR_PATH}/texts.pkl", "wb") as f:
+        pickle.dump(texts, f)
 
-    return results
+
+def load_faiss_index():
+    index_path = f"{VECTOR_PATH}/index.faiss"
+    text_path = f"{VECTOR_PATH}/texts.pkl"
+
+    if not os.path.exists(index_path) or not os.path.exists(text_path):
+        return None, []
+
+    index = faiss.read_index(index_path)
+
+    with open(text_path, "rb") as f:
+        texts = pickle.load(f)
+
+    return index, texts
 # import faiss
 # import numpy as np
 # import pickle
