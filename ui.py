@@ -8,6 +8,7 @@ from app.ingestion.loader import load_documents
 from app.ingestion.chunker import chunk_documents
 from app.ingestion.embedder import create_embeddings
 from app.retrieval.vector_store import save_faiss_index
+from app.retrieval.search import search
 st.set_page_config(page_title="GenAI RAG Assistant", layout="wide")
 
 st.title("🤖 GenAI RAG Assistant")
