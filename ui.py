@@ -1,14 +1,14 @@
 import streamlit as st
 import os
 
-# import your RAG functions
-# from app.retrieval.search import search
+# RAG imports
 from app.llm.generator import generate_answer
 from app.ingestion.loader import load_documents
 from app.ingestion.chunker import chunk_documents
 from app.ingestion.embedder import create_embeddings
 from app.retrieval.vector_store import save_faiss_index
 from app.retrieval.retriever import search
+
 st.set_page_config(page_title="GenAI RAG Assistant", layout="wide")
 
 st.title("🤖 GenAI RAG Assistant")
@@ -21,23 +21,23 @@ uploaded_file = st.sidebar.file_uploader(
     type=["pdf", "csv", "txt"]
 )
 
-# handle upload
+# ---------- Upload Handling ----------
 if uploaded_file:
-    # save file locally
     os.makedirs("data/raw", exist_ok=True)
     file_path = os.path.join("data/raw", uploaded_file.name)
 
     with open(file_path, "wb") as f:
         f.write(uploaded_file.getbuffer())
 
-    # re-run ingestion pipeline
+    # Run ingestion pipeline
     docs = load_documents()
-    chunks = chunk_documents
+    chunks = chunk_documents(docs)
     vectors = create_embeddings(chunks)
     save_faiss_index(vectors, chunks)
-    st.sidebar.success("File uploaded & indexed!")
 
-# clear chat
+    st.sidebar.success("✅ File uploaded & indexed!")
+
+# ---------- Clear Chat ----------
 if st.sidebar.button("🧹 Clear Chat"):
     st.session_state.messages = []
     st.rerun()
@@ -46,7 +46,7 @@ if st.sidebar.button("🧹 Clear Chat"):
 if "messages" not in st.session_state:
     st.session_state.messages = []
 
-# show chat history
+# Show chat history
 for msg in st.session_state.messages:
     st.chat_message(msg["role"]).write(msg["content"])
 
@@ -54,19 +54,24 @@ for msg in st.session_state.messages:
 question = st.chat_input("Ask questions from your documents...")
 
 if question:
+    # Show user message
     st.session_state.messages.append(
         {"role": "user", "content": question}
     )
     st.chat_message("user").write(question)
 
     with st.spinner("Thinking..."):
-        # 🔥 DIRECT RAG CALL (NO API)
         chunks = search(question)
-        answer = generate_answer(question, chunks)
 
-    # sources
-    sources = [c.get("source", "chunk") for c in chunks]
+        # ✅ Handle empty case (important for cloud)
+        if not chunks:
+            answer = "⚠️ Please upload a document first."
+            sources = []
+        else:
+            answer = generate_answer(question, chunks)
+            sources = [c.get("source", "chunk") for c in chunks]
 
+    # Format answer
     answer_text = answer
 
     if sources:
@@ -74,6 +79,7 @@ if question:
         for s in sources:
             answer_text += f"- {s}\n"
 
+    # Save assistant message
     st.session_state.messages.append(
         {"role": "assistant", "content": answer_text}
     )
