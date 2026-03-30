@@ -5,3 +5,6 @@ langchain
 faiss-cpu
 openai
 tiktoken
+groq
+streamlit
+sentence-transformers
